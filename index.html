@@ -68,8 +68,8 @@
         <input id="buyerEmail" placeholder="Email" />
       </div>
       <div class="form-actions">
-        <button class="btn btn-outline" id="skipGate">Lain kali</button>
-        <button class="btn" id="saveGate">Lanjut</button>
+        <button class="btn btn-outline" id="skipGate" onclick="window.__skipGate && window.__skipGate()">Lain kali</button>
+        <button class="btn" id="saveGate" onclick="window.__saveGate && window.__saveGate()">Lanjut</button>
       </div>
     </div>
   </div>
@@ -168,13 +168,32 @@
     }
     function showGate(v){ document.getElementById('gate').hidden = !v; }
     function setupGate(){
+      const panel = document.getElementById('gate');
       const save = document.getElementById('saveGate');
       const skip = document.getElementById('skipGate');
-      save.addEventListener('click', async () => {
-        const name = document.getElementById('buyerName').value.trim();
-        const phone = document.getElementById('buyerPhone').value.trim();
-        const email = document.getElementById('buyerEmail').value.trim();
-        if(!name) { alert('Nama wajib diisi'); return; }
+      const nameEl = document.getElementById('buyerName');
+      const phoneEl = document.getElementById('buyerPhone');
+      const emailEl = document.getElementById('buyerEmail');
+      if(!panel || !save || !skip || !nameEl) { console.error('Gate elements not found'); return; }
+
+      // backup handlers so it still works even if events fail
+      window.__saveGate = async function(){
+        const name = nameEl.value.trim();
+        const phone = phoneEl.value.trim();
+        const email = emailEl.value.trim();
+        if(!name){ alert('Nama wajib diisi'); nameEl.focus(); return; }
+        const buyer = {name, phone, email};
+        try { localStorage.setItem('buyer', JSON.stringify(buyer)); } catch(e) {}
+        showGate(false);
+        try { await apiPost({action:'register', buyer}); } catch(e) { console.warn('Register post failed', e); }
+      };
+      window.__skipGate = function(){ showGate(false); };
+
+      save.onclick = window.__saveGate;
+      skip.onclick = window.__skipGate;
+
+      if(!getBuyer()) showGate(true);
+    }
         const buyer = {name, phone, email};
         localStorage.setItem('buyer', JSON.stringify(buyer));
         showGate(false);
