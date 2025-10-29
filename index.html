@@ -69,7 +69,7 @@
       </div>
       <div class="form-actions">
         <button class="btn btn-outline" id="skipGate" onclick="window.__skipGate && window.__skipGate()">Lain kali</button>
-        <button class="btn" id="saveGate" onclick="window.__saveGate && window.__saveGate()">Lanjut</button>
+        <button class="btn" id="saveGate" onclick="if(window.__saveGate){ window.__saveGate(); }">Lanjut</button>
       </div>
     </div>
   </div>
